@@ -7,11 +7,9 @@ from sqlalchemy.orm import Session
 from sqlalchemy import create_engine, func, MetaData, inspect, Table
 from flask import jsonify
 
-
 def init_engine():
     engine = create_engine("sqlite:///hawaii.sqlite")
     Base = automap_base()
-
     return engine, Base
 
 
@@ -57,6 +55,7 @@ def get_tobs():
 
     summary = pd.DataFrame(qry, columns=['date','temp']).set_index('date').to_dict()
     return jsonify(summary)
+
 
 def get_summary_start(start):
     engine, Base = init_engine()
