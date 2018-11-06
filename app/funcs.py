@@ -46,27 +46,27 @@ def get_tobs():
     engine, Base = init_engine()
     Base.prepare(engine, reflect=True)
 
-    obs_count = engine.execute("""
-      select station
-            ,count(tobs) as tobs
-      from measurement
-        group by station
-        order by tobs desc
+    obs_station = engine.execute("""
+        select station
+              ,count(tobs) as tobs
+        from measurement
+          group by station
+          order by tobs desc;
     """).fetchall()
 
     qry = engine.execute(f"""
-      select date
-            ,station
-            ,tobs
-      from measurement
-        where date between '2016-08-23' and '2017-08-23'
-        group by date, station
-        order by date desc;
+        select date
+              ,station
+              ,tobs
+        from measurement
+          where date between '2016-08-23' and '2017-08-23'
+          group by date, station
+          order by date desc;
     """).fetchall()
 
     summary = pd.DataFrame(qry, columns=['date','station','data'])\
         .set_index('station')\
-        .loc[obs_count[0][0]]\
+        .loc[obs_station[0][0]]\
         .reset_index()\
         .drop(columns=['station'])\
         .set_index('date')\
