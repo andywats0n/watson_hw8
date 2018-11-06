@@ -47,11 +47,11 @@ def get_tobs():
     Base.prepare(engine, reflect=True)
 
     obs_count = engine.execute("""
-        select station
-              ,count(tobs) as tobs
-        from measurement
-          group by station
-          order by tobs desc
+      select station
+            ,count(tobs) as tobs
+      from measurement
+        group by station
+        order by tobs desc
     """).fetchall()
 
     qry = engine.execute(f"""
