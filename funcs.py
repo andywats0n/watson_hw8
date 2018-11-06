@@ -45,15 +45,35 @@ def get_tobs():
     engine, Base = init_engine()
     Base.prepare(engine, reflect=True)
 
-    qry = engine.execute("""
-        select date, avg(tobs) as tobs
+    obs_count = engine.execute("""
+        select station
+              ,count(tobs) as tobs
         from measurement
-          where date between '2016-08-23' and '2017-08-23'
-          group by date
-          order by date desc;
+          group by station
+          order by tobs desc
     """).fetchall()
 
-    summary = pd.DataFrame(qry, columns=['date','temp']).set_index('date').to_dict()
+    highest_obs = obs_count[0][0]
+
+    qry = engine.execute(f"""
+      select date
+            ,station
+            ,tobs
+      from measurement
+        where date between '2016-08-23' and '2017-08-23'
+        group by date, station
+        order by date desc;
+    """).fetchall()
+
+    summary = pd.DataFrame(qry, columns=['date','station','data'])\
+        .set_index('station')\
+        .loc[highest_obs]\
+        .reset_index()\
+        .drop(columns=['station'])\
+        .set_index('date')\
+        .sort_values(by=['date'], ascending=False)\
+        .to_dict()
+
     return jsonify(summary)
 
 
