@@ -8,7 +8,7 @@ from sqlalchemy import create_engine, func, MetaData, inspect, Table
 from flask import jsonify
 
 def init_engine():
-    engine = create_engine("sqlite:///hawaii.sqlite")
+    engine = create_engine("sqlite:///../db/hawaii.sqlite")
     Base = automap_base()
     return engine, Base
 
@@ -20,11 +20,12 @@ def get_prcp():
     qry = engine.execute("""
         select date, sum(prcp) as prcp
         from measurement
+          where date between '2016-08-23' and '2017-08-23'
           group by date
           order by date desc;
     """).fetchall()
 
-    summary = pd.DataFrame(qry,columns=['date','pcrp']).set_index('date').to_dict()
+    summary = pd.DataFrame(qry,columns=['date','data']).set_index('date').to_dict()
     return jsonify(summary)
 
 
@@ -53,8 +54,6 @@ def get_tobs():
           order by tobs desc
     """).fetchall()
 
-    highest_obs = obs_count[0][0]
-
     qry = engine.execute(f"""
       select date
             ,station
@@ -67,7 +66,7 @@ def get_tobs():
 
     summary = pd.DataFrame(qry, columns=['date','station','data'])\
         .set_index('station')\
-        .loc[highest_obs]\
+        .loc[obs_count[0][0]]\
         .reset_index()\
         .drop(columns=['station'])\
         .set_index('date')\
